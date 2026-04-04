@@ -1,6 +1,7 @@
 import { Box, Flex } from '@chakra-ui/react';
 import _ from 'lodash';
-import React, { useState } from 'react';
+import React from 'react';
+import { useImmer } from 'use-immer';
 
 import Cell from 'components/Cell';
 
@@ -8,7 +9,7 @@ const NUM_ROWS = 10;
 const NUM_COLUMNS = 10;
 
 const Spreadsheet: React.FC = () => {
-  const [spreadsheetState, setSpreadsheetState] = useState(
+  const [spreadsheetState, setSpreadsheetState] = useImmer(
     _.times(NUM_ROWS, () => _.times(NUM_COLUMNS, _.constant(''))),
   );
 
@@ -22,16 +23,9 @@ const Spreadsheet: React.FC = () => {
                 key={`${rowIdx}/${columnIdx}`}
                 value={cellValue}
                 onChange={(newValue: string) => {
-                  const newRow = [
-                    ...spreadsheetState[rowIdx].slice(0, columnIdx),
-                    newValue,
-                    ...spreadsheetState[rowIdx].slice(columnIdx + 1),
-                  ];
-                  setSpreadsheetState([
-                    ...spreadsheetState.slice(0, rowIdx),
-                    newRow,
-                    ...spreadsheetState.slice(rowIdx + 1),
-                  ]);
+                  setSpreadsheetState(draft => {
+                    draft[rowIdx][columnIdx] = newValue;
+                  });
                 }}
               />
             ))}
