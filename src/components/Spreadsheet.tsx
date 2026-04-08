@@ -1,6 +1,6 @@
 import { Box, Flex } from '@chakra-ui/react';
 import _ from 'lodash';
-import React from 'react';
+import React, { useState } from 'react';
 import { useImmer } from 'use-immer';
 
 import Cell from 'components/Cell';
@@ -11,8 +11,8 @@ const Spreadsheet: React.FC = () => {
   const [grid, setGrid] = useImmer<CellValue[][]>(
     _.times(NUM_ROWS, () => _.times(NUM_COLUMNS, () => ({ ...EMPTY_CELL }))),
   );
-  const [activeCell, setActiveCell] = useImmer<CellPosition | null>(null);
-  const [editingCell, setEditingCell] = useImmer<CellPosition | null>(null);
+  const [activeCell, setActiveCell] = useState<CellPosition | null>(null);
+  const [editingCell, setEditingCell] = useState<CellPosition | null>(null);
 
   const isActive = (row: number, col: number) =>
     activeCell?.row === row && activeCell?.col === col;
