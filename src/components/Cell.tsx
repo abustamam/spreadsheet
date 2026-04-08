@@ -57,6 +57,7 @@ const Cell: React.FC<Props> = ({
         height={CELL_HEIGHT}
         flexShrink={0}
         position="relative"
+        overflow="hidden"
       >
         <Input
           ref={inputRef}
