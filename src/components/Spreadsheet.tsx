@@ -60,10 +60,7 @@ const Spreadsheet: React.FC = () => {
     }
 
     setActiveCell({ row: nextRow, col: nextCol });
-    // If we're moving in nav mode (no commit), keep focus on the container
-    if (!commitRaw) {
-      containerRef.current?.focus();
-    }
+    containerRef.current?.focus();
   };
 
   // Select a cell without entering edit mode (click behavior)
