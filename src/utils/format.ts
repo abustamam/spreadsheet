@@ -4,7 +4,10 @@
  * Rules:
  * - Empty string → ""
  * - Non-numeric string → return as-is
- * - "$" prefix → strip prefix, format number, re-add "$"
+ * - "$" prefix → format as USD currency via Intl.NumberFormat
+ *     - No decimal typed ($10)    → $10      (0 fraction digits)
+ *     - Decimal typed ($10.0)     → $10.00   (min 2 fraction digits)
+ *     - Extra precision ($10.123) → $10.123  (preserve original places)
  * - Pure number (int or decimal) → format with thousands separator
  * - Negative numbers → preserve the minus sign
  */
@@ -16,12 +19,21 @@ export function formatValue(raw: string): string {
   // Currency: starts with $ (optionally negative after $)
   if (trimmed.startsWith('$')) {
     const rest = trimmed.slice(1);
-    const formatted = formatNumber(rest);
-    if (formatted === null) return trimmed;
-    // Move minus sign outside the $ prefix
-    return formatted.startsWith('-')
-      ? `-$${formatted.slice(1)}`
-      : `$${formatted}`;
+    if (!isValidNumericString(rest)) return trimmed;
+    const num = parseFloat(rest);
+    if (isNaN(num)) return trimmed;
+
+    const hasDecimal = rest.includes('.');
+    const rawDecimalPlaces = hasDecimal ? (rest.split('.')[1]?.length ?? 0) : 0;
+    // Currency convention: at least 2 decimal places when a decimal is present
+    const fractionDigits = hasDecimal ? Math.max(2, rawDecimalPlaces) : 0;
+
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+    }).format(num);
   }
 
   // Plain number
@@ -29,13 +41,16 @@ export function formatValue(raw: string): string {
   return formatted !== null ? formatted : trimmed;
 }
 
+function isValidNumericString(value: string): boolean {
+  return /^-?\d*\.?\d+$/.test(value) || /^-?\d+\.?\d*$/.test(value);
+}
+
 /**
  * Format a numeric string with thousands separators.
  * Returns null if the string is not a valid number.
  */
 function formatNumber(value: string): string | null {
-  // Allow optional leading minus, digits, optional decimal point + digits
-  if (!/^-?\d*\.?\d+$/.test(value) && !/^-?\d+\.?\d*$/.test(value)) {
+  if (!isValidNumericString(value)) {
     return null;
   }
 
@@ -66,5 +81,5 @@ export function isNumericValue(raw: string): boolean {
   if (!raw || raw.trim() === '') return false;
   const trimmed = raw.trim();
   const withoutCurrency = trimmed.startsWith('$') ? trimmed.slice(1) : trimmed;
-  return /^-?\d*\.?\d+$/.test(withoutCurrency) || /^-?\d+\.?\d*$/.test(withoutCurrency);
+  return isValidNumericString(withoutCurrency);
 }
