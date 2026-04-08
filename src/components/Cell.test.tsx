@@ -1,10 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
+import { useRef } from 'react';
 import Cell from './Cell';
 import { CellValue } from 'types/spreadsheet';
 
 const makeCell = (raw: string, display: string = raw): CellValue => ({ raw, display });
+
+const isExternallyCommitted = { current: false };
 
 const defaultProps = {
   isActive: false,
@@ -14,6 +17,7 @@ const defaultProps = {
   onChange: vi.fn(),
   onCommit: vi.fn(),
   onCancel: vi.fn(),
+  isExternallyCommitted,
 };
 
 describe('Cell', () => {

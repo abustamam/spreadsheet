@@ -13,6 +13,7 @@ interface Props {
   onChange: (raw: string) => void;
   onCommit: (raw: string) => void;
   onCancel: () => void;
+  isExternallyCommitted: React.MutableRefObject<boolean>;
 }
 
 const CELL_WIDTH = '90px';
@@ -27,6 +28,7 @@ const Cell: React.FC<Props> = ({
   onChange,
   onCommit,
   onCancel,
+  isExternallyCommitted,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const isCancelledRef = useRef<boolean>(false);
@@ -65,10 +67,11 @@ const Cell: React.FC<Props> = ({
           value={value.raw}
           onChange={e => onChange(e.target.value)}
           onBlur={() => {
-            if (!isCancelledRef.current) {
+            if (!isCancelledRef.current && !isExternallyCommitted.current) {
               onCommit(value.raw);
             }
             isCancelledRef.current = false;
+            isExternallyCommitted.current = false;
           }}
           onKeyDown={e => {
             // Escape is handled locally; all other nav keys bubble to Spreadsheet

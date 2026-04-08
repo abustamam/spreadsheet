@@ -15,6 +15,9 @@ const Spreadsheet: React.FC = () => {
   const [editingCell, setEditingCell] = useState<CellPosition | null>(null);
   const previousRawRef = useRef<string>('');
   const containerRef = useRef<HTMLDivElement>(null);
+  const editingCellRef = useRef<CellPosition | null>(null);
+  const gridRef = useRef<CellValue[][]>(grid);
+  const isExternallyCommittedRef = useRef<boolean>(false);
 
   const isActive = (row: number, col: number) =>
     activeCell?.row === row && activeCell?.col === col;
@@ -161,16 +164,18 @@ const Spreadsheet: React.FC = () => {
     }
   };
 
+  useEffect(() => { editingCellRef.current = editingCell; }, [editingCell]);
+  useEffect(() => { gridRef.current = grid; }, [grid]);
+
   useEffect(() => {
     const handleDocMouseDown = (e: MouseEvent) => {
       const container = containerRef.current;
       if (container && !container.contains(e.target as Node)) {
-        if (editingCell) {
-          commitCell(
-            editingCell.row,
-            editingCell.col,
-            grid[editingCell.row][editingCell.col].raw,
-          );
+        const ec = editingCellRef.current;
+        if (ec) {
+          editingCellRef.current = null; // prevent onBlur double-commit
+          isExternallyCommittedRef.current = true;
+          commitCell(ec.row, ec.col, gridRef.current[ec.row][ec.col].raw);
         }
         setActiveCell(null);
         setEditingCell(null);
@@ -178,7 +183,7 @@ const Spreadsheet: React.FC = () => {
     };
     document.addEventListener('mousedown', handleDocMouseDown);
     return () => document.removeEventListener('mousedown', handleDocMouseDown);
-  }, [editingCell, grid]);
+  }, []); // stable: reads state through refs
 
   return (
     <Box
@@ -246,6 +251,7 @@ const Spreadsheet: React.FC = () => {
                 });
               }}
               onCommit={(raw: string) => commitCell(rowIdx, colIdx, raw)}
+              isExternallyCommitted={isExternallyCommittedRef}
               onCancel={() => {
                 setGrid(draft => {
                   draft[rowIdx][colIdx].raw = previousRawRef.current;
