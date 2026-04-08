@@ -60,6 +60,18 @@ const Spreadsheet: React.FC = () => {
     }
 
     setActiveCell({ row: nextRow, col: nextCol });
+    // If we're moving in nav mode (no commit), keep focus on the container
+    if (!commitRaw) {
+      containerRef.current?.focus();
+    }
+  };
+
+  // Select a cell without entering edit mode (click behavior)
+  const selectCell = (row: number, col: number) => {
+    setActiveCell({ row, col });
+    setEditingCell(null);
+    // Return focus to the container so keyboard events (arrows, Enter) are received
+    containerRef.current?.focus();
   };
 
   const enterEditMode = (row: number, col: number, initialChar?: string) => {
@@ -244,7 +256,7 @@ const Spreadsheet: React.FC = () => {
               isActive={isActive(rowIdx, colIdx)}
               isEditing={isEditing(rowIdx, colIdx)}
               isEvenRow={rowIdx % 2 === 0}
-              onActivate={() => enterEditMode(rowIdx, colIdx)}
+              onActivate={() => selectCell(rowIdx, colIdx)}
               onChange={(raw: string) => {
                 setGrid(draft => {
                   draft[rowIdx][colIdx].raw = raw;
