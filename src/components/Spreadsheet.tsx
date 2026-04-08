@@ -1,6 +1,6 @@
 import { Box, Flex } from '@chakra-ui/react';
 import _ from 'lodash';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useImmer } from 'use-immer';
 
 import Cell from 'components/Cell';
@@ -14,6 +14,7 @@ const Spreadsheet: React.FC = () => {
   const [activeCell, setActiveCell] = useState<CellPosition | null>(null);
   const [editingCell, setEditingCell] = useState<CellPosition | null>(null);
   const previousRawRef = useRef<string>('');
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const isActive = (row: number, col: number) =>
     activeCell?.row === row && activeCell?.col === col;
@@ -160,8 +161,28 @@ const Spreadsheet: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const handleDocMouseDown = (e: MouseEvent) => {
+      const container = containerRef.current;
+      if (container && !container.contains(e.target as Node)) {
+        if (editingCell) {
+          commitCell(
+            editingCell.row,
+            editingCell.col,
+            grid[editingCell.row][editingCell.col].raw,
+          );
+        }
+        setActiveCell(null);
+        setEditingCell(null);
+      }
+    };
+    document.addEventListener('mousedown', handleDocMouseDown);
+    return () => document.removeEventListener('mousedown', handleDocMouseDown);
+  }, [editingCell, grid]);
+
   return (
     <Box
+      ref={containerRef}
       width="full"
       outline="none"
       tabIndex={0}
