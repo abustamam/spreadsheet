@@ -1,6 +1,6 @@
 import { Box, Flex } from '@chakra-ui/react';
 import _ from 'lodash';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useImmer } from 'use-immer';
 
 import Cell from 'components/Cell';
@@ -19,23 +19,23 @@ const Spreadsheet: React.FC = () => {
   const gridRef = useRef<CellValue[][]>(grid);
   const isExternallyCommittedRef = useRef<boolean>(false);
 
-  const isActive = (row: number, col: number) =>
-    activeCell?.row === row && activeCell?.col === col;
+  const isActive = useCallback((row: number, col: number) =>
+    activeCell?.row === row && activeCell?.col === col, [activeCell]);
 
-  const isEditing = (row: number, col: number) =>
-    editingCell?.row === row && editingCell?.col === col;
+  const isEditing = useCallback((row: number, col: number) =>
+    editingCell?.row === row && editingCell?.col === col, [editingCell]);
 
-  const commitCell = (row: number, col: number, raw: string) => {
+  const commitCell = useCallback((row: number, col: number, raw: string) => {
     setGrid(draft => {
       draft[row][col] = { raw, display: formatValue(raw) };
     });
     setEditingCell(null);
-  };
+  }, [setGrid, setEditingCell]);
 
   const clamp = (value: number, min: number, max: number) =>
     Math.max(min, Math.min(max, value));
 
-  const move = (rowDelta: number, colDelta: number, commitRaw?: string) => {
+  const move = useCallback((rowDelta: number, colDelta: number, commitRaw?: string) => {
     if (!activeCell) return;
     const { row, col } = activeCell;
 
@@ -61,17 +61,17 @@ const Spreadsheet: React.FC = () => {
 
     setActiveCell({ row: nextRow, col: nextCol });
     containerRef.current?.focus();
-  };
+  }, [activeCell, editingCell, commitCell]);
 
   // Select a cell without entering edit mode (click behavior)
-  const selectCell = (row: number, col: number) => {
+  const selectCell = useCallback((row: number, col: number) => {
     setActiveCell({ row, col });
     setEditingCell(null);
     // Return focus to the container so keyboard events (arrows, Enter) are received
     containerRef.current?.focus();
-  };
+  }, [setActiveCell, setEditingCell]);
 
-  const enterEditMode = (row: number, col: number, initialChar?: string) => {
+  const enterEditMode = useCallback((row: number, col: number, initialChar?: string) => {
     previousRawRef.current = grid[row][col].raw;
     setActiveCell({ row, col });
     setEditingCell({ row, col });
@@ -80,13 +80,13 @@ const Spreadsheet: React.FC = () => {
         draft[row][col].raw = initialChar;
       });
     }
-  };
+  }, [grid, setGrid]);
 
   const currentRaw = editingCell
     ? grid[editingCell.row][editingCell.col].raw
     : '';
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
     if (!activeCell) return;
     const { row, col } = activeCell;
 
@@ -171,7 +171,7 @@ const Spreadsheet: React.FC = () => {
           break;
       }
     }
-  };
+  }, [activeCell, isEditing, move, currentRaw, setGrid, enterEditMode]);
 
   useEffect(() => { editingCellRef.current = editingCell; }, [editingCell]);
   useEffect(() => { gridRef.current = grid; }, [grid]);
@@ -192,7 +192,7 @@ const Spreadsheet: React.FC = () => {
     };
     document.addEventListener('mousedown', handleDocMouseDown);
     return () => document.removeEventListener('mousedown', handleDocMouseDown);
-  }, []); // stable: reads state through refs
+  }, [commitCell]); // stable: reads state through refs
 
   return (
     <Box
@@ -223,7 +223,6 @@ const Spreadsheet: React.FC = () => {
           </Box>
         ))}
       </Flex>
-
       {/* Grid rows */}
       {grid.map((row, rowIdx) => (
         <Flex key={rowIdx}>
@@ -244,7 +243,6 @@ const Spreadsheet: React.FC = () => {
           >
             {ROW_LABELS[rowIdx]}
           </Box>
-
           {/* Cells */}
           {row.map((cellValue, colIdx) => (
             <Cell

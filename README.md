@@ -75,4 +75,4 @@ Even though tests were explicitly excluded from the submission instructions, hav
 
 LLM usage accelerated execution and caught edge cases I would have missed (e.g., negative zero formatting, controlled input blur/escape race condition, column header alignment).
 
-Session logs are included in the `ai-coding-exporter/exports/` directory.
+Session logs are included in the `ai-logs/` directory.

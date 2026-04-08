@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
-import { useRef } from 'react';
 import Cell from './Cell';
 import { CellValue } from 'types/spreadsheet';
 
