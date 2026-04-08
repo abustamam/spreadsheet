@@ -17,7 +17,11 @@ export function formatValue(raw: string): string {
   if (trimmed.startsWith('$')) {
     const rest = trimmed.slice(1);
     const formatted = formatNumber(rest);
-    return formatted !== null ? `$${formatted}` : trimmed;
+    if (formatted === null) return trimmed;
+    // Move minus sign outside the $ prefix
+    return formatted.startsWith('-')
+      ? `-$${formatted.slice(1)}`
+      : `$${formatted}`;
   }
 
   // Plain number
@@ -37,19 +41,20 @@ function formatNumber(value: string): string | null {
 
   const num = parseFloat(value);
   if (isNaN(num)) return null;
+  const normalized = num === 0 ? 0 : num;
 
   // Check if original had decimal component
   const hasDecimal = value.includes('.');
   if (hasDecimal) {
     // Preserve original decimal places
     const decimalPlaces = value.split('.')[1]?.length ?? 0;
-    return num.toLocaleString('en-US', {
+    return normalized.toLocaleString('en-US', {
       minimumFractionDigits: decimalPlaces,
       maximumFractionDigits: decimalPlaces,
     });
   }
 
-  return num.toLocaleString('en-US', {
+  return normalized.toLocaleString('en-US', {
     maximumFractionDigits: 0,
   });
 }
