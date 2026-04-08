@@ -28,12 +28,6 @@ const Spreadsheet: React.FC = () => {
     setEditingCell(null);
   };
 
-  const activateCell = (row: number, col: number) => {
-    previousRawRef.current = grid[row][col].raw;
-    setActiveCell({ row, col });
-    setEditingCell({ row, col });
-  };
-
   const clamp = (value: number, min: number, max: number) =>
     Math.max(min, Math.min(max, value));
 
@@ -224,7 +218,7 @@ const Spreadsheet: React.FC = () => {
               isActive={isActive(rowIdx, colIdx)}
               isEditing={isEditing(rowIdx, colIdx)}
               isEvenRow={rowIdx % 2 === 0}
-              onActivate={() => activateCell(rowIdx, colIdx)}
+              onActivate={() => enterEditMode(rowIdx, colIdx)}
               onChange={(raw: string) => {
                 setGrid(draft => {
                   draft[rowIdx][colIdx].raw = raw;

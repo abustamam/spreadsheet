@@ -29,6 +29,7 @@ const Cell: React.FC<Props> = ({
   onCancel,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const isCancelledRef = useRef<boolean>(false);
   const numeric = isNumericValue(value.raw);
 
   // Auto-focus input when entering edit mode
@@ -63,11 +64,17 @@ const Cell: React.FC<Props> = ({
           ref={inputRef}
           value={value.raw}
           onChange={e => onChange(e.target.value)}
-          onBlur={() => onCommit(value.raw)}
+          onBlur={() => {
+            if (!isCancelledRef.current) {
+              onCommit(value.raw);
+            }
+            isCancelledRef.current = false;
+          }}
           onKeyDown={e => {
             // Escape is handled locally; all other nav keys bubble to Spreadsheet
             if (e.key === 'Escape') {
               e.stopPropagation();
+              isCancelledRef.current = true;
               onCancel();
             }
           }}
