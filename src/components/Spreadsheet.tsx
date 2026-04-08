@@ -44,7 +44,8 @@ const Spreadsheet: React.FC = () => {
         {COLUMN_LABELS.map(label => (
           <Box
             key={label}
-            flex={1}
+            width="90px"
+            flexShrink={0}
             textAlign="center"
             fontSize="xs"
             fontWeight="semibold"
