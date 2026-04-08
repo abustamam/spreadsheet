@@ -34,7 +34,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **Auto-format on commit, not on keystroke** — formatting during typing is distracting. The cell shows raw input while editing, formatted output after committing.
 - **`$` prefix convention** — `$1234` → `$1,234`. Simple, discoverable, no format menu needed.
-- **Click-to-edit directly** — clicking a cell enters edit mode immediately. Finance users expect to click and type, not click-then-press-Enter.
+- **Click-to-edit directly** — clicking a cell selects a cell, and typing enters edit mode. Finance users expect to click and type, not click-then-press-Enter.
 - **Monospace font for cells** — column alignment is easier to read at a glance when digit widths are consistent.
 
 ### Trade-offs
@@ -65,6 +65,8 @@ This project was built with Claude Code (Anthropic). I used it throughout:
 - **Implementation** — dispatched subagents per task with spec and quality review gates between tasks
 - **Code review** — each task was reviewed for spec compliance and code quality before moving on
 
+I used [GStack](https://github.com/garrytan/gstack) and [Obra Superpowers](https://github.com/obra/superpowers) to help me prepare for the exercise by preparing the codebase for rapid iteration (agentic harness). Even though tests were explicitly excluded from the submission instructions, having tests prevents the LLM from hallucinating code that does not work.
+
 The core engineering judgment — what to build, what to skip, how to structure the components — was mine. Claude accelerated execution and caught edge cases I would have missed (e.g., negative zero formatting, controlled input blur/escape race condition, column header alignment).
 
-Session logs are included in the `ai-logs/` directory as specified in the submission instructions.
+Session logs are included in the `ai-coding-exporter/exports/` directory as specified in the submission instructions.
